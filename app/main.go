@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/codecrafters-io/git-starter-go/internals/git"
 )
 
 const (
-	COMMAND_INIT = "init"
+	CommandInit    = "init"
+	CommandCatFile = "cat-file"
 )
 
 func initializeGitDirectory() {
@@ -24,6 +27,12 @@ func initializeGitDirectory() {
 	fmt.Println("Initialized git directory")
 }
 
+func handleCatFileCommand() {
+	catFileCommand := git.NewCatFileCommand(os.Args[2], os.Args[3])
+	gitClient := git.Git{}
+	gitClient.Run(catFileCommand)
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprintf(os.Stderr, "usage: mygit <command> [<args>...]\n")
@@ -31,8 +40,10 @@ func main() {
 	}
 
 	switch command := os.Args[1]; command {
-	case COMMAND_INIT:
+	case CommandInit:
 		initializeGitDirectory()
+	case CommandCatFile:
+		handleCatFileCommand()
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
 		os.Exit(1)
