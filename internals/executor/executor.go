@@ -3,8 +3,9 @@ package executor
 import "errors"
 
 const (
-	Init    = "init"
-	CatFile = "cat-file"
+	Init       = "init"
+	CatFile    = "cat-file"
+	HashObject = "hash-object"
 )
 
 type CommandExecutor interface {
@@ -12,8 +13,9 @@ type CommandExecutor interface {
 }
 
 var availableCommands map[string]CommandExecutor = map[string]CommandExecutor{
-	Init:    &InitCommand{},
-	CatFile: &CatFileCommand{},
+	Init:       &InitCommand{},
+	CatFile:    &CatFileCommand{},
+	HashObject: &HashObjectCommand{},
 }
 
 func GetCommandExecutor(commandname string) (CommandExecutor, error) {
