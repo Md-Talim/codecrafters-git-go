@@ -33,13 +33,14 @@ func (h *HashObjectCommand) Execute() error {
 		return fmt.Errorf("could not open %s for reading: %w", file, err)
 	}
 
-	if option == OptionWrite {
+	switch option {
+	case OptionWrite:
 		hash, err := blob.Write(fileContents)
 		if err != nil {
 			return err
 		}
 		fmt.Print(hash)
-	} else {
+	default:
 		hash := blob.CalculateHash(fileContents)
 		fmt.Print(hash)
 	}

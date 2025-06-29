@@ -3,7 +3,6 @@ package executor
 import (
 	"errors"
 	"os"
-	"path"
 
 	"github.com/md-talim/codecrafters-git-go/internals/blob"
 )
@@ -30,19 +29,10 @@ func (c *CatFileCommand) Execute() error {
 }
 
 func (c *CatFileCommand) prettyPrint(commitSHA string) error {
-	objectFilePath := getGitObjectPath(commitSHA)
-	blobContent, err := blob.Read(objectFilePath)
+	blobContent, err := blob.Read(commitSHA)
 	if err != nil {
 		return err
 	}
 	os.Stdout.Write(blobContent)
 	return err
-}
-
-func getGitObjectPath(commitSHA string) string {
-	folder := commitSHA[0:2]
-	file := commitSHA[2:]
-
-	gitObjectPath := path.Join(".git", "objects", folder, file)
-	return gitObjectPath
 }
