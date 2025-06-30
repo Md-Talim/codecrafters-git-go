@@ -22,7 +22,9 @@ func (g *GitClient) Run() {
 	commandExecutor, err := executor.GetCommandExecutor(os.Args[1])
 	if err != nil {
 		fmt.Fprint(os.Stderr, err.Error())
+		return
 	}
+
 	if err = commandExecutor.Execute(); err != nil {
 		fmt.Fprint(os.Stderr, err.Error())
 	}
