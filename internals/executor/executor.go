@@ -6,6 +6,7 @@ const (
 	Init       = "init"
 	CatFile    = "cat-file"
 	HashObject = "hash-object"
+	LSTree     = "ls-tree"
 )
 
 type CommandExecutor interface {
@@ -16,6 +17,7 @@ var availableCommands map[string]CommandExecutor = map[string]CommandExecutor{
 	Init:       &InitCommand{},
 	CatFile:    &CatFileCommand{},
 	HashObject: &HashObjectCommand{},
+	LSTree:     &LSTreeCommand{},
 }
 
 func GetCommandExecutor(commandname string) (CommandExecutor, error) {

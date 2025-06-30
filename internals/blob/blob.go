@@ -46,6 +46,32 @@ func CalculateHash(content []byte) string {
 	return fmt.Sprintf("%x", hash)
 }
 
+// ReadRaw reads the raw content of a git object file (without extracting blob content)
+func ReadRaw(hash string) ([]byte, error) {
+	_, objectPath := getObjectPaths(hash)
+	if _, err := os.Stat(objectPath); errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("not a valid object name %s", hash)
+	}
+
+	fileContents, err := os.ReadFile(objectPath)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := zlib.NewReader(bytes.NewReader(fileContents))
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	outputBuffer, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return outputBuffer, nil
+}
+
 // Read reads the content of a git object file and returns the content
 func Read(hash string) ([]byte, error) {
 	_, objectPath := getObjectPaths(hash)
