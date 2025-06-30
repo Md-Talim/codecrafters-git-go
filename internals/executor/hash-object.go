@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/md-talim/codecrafters-git-go/internals/blob"
+	"github.com/md-talim/codecrafters-git-go/internals/object"
 )
 
 const (
@@ -35,13 +35,13 @@ func (h *HashObjectCommand) Execute() error {
 
 	switch option {
 	case OptionWrite:
-		hash, err := blob.Write(fileContents)
+		hash, err := object.Write(fileContents, "blob")
 		if err != nil {
 			return err
 		}
 		fmt.Print(hash)
 	default:
-		hash := blob.CalculateHash(fileContents)
+		hash := object.CalculateHash(fileContents, "blob")
 		fmt.Print(hash)
 	}
 

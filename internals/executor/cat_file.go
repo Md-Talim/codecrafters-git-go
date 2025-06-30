@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/md-talim/codecrafters-git-go/internals/blob"
+	"github.com/md-talim/codecrafters-git-go/internals/object"
 )
 
 const (
@@ -29,10 +29,10 @@ func (c *CatFileCommand) Execute() error {
 }
 
 func (c *CatFileCommand) prettyPrint(commitSHA string) error {
-	blobContent, err := blob.Read(commitSHA)
+	blobContent, err := object.ReadContent(commitSHA)
 	if err != nil {
 		return err
 	}
 	os.Stdout.Write(blobContent)
-	return err
+	return nil
 }

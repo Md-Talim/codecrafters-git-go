@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/md-talim/codecrafters-git-go/internals/blob"
+	"github.com/md-talim/codecrafters-git-go/internals/object"
 )
 
 const FlagNameOnly string = "--name-only"
@@ -62,7 +62,7 @@ func (l *LSTreeCommand) Execute() error {
 }
 
 func (l *LSTreeCommand) parseTreeObject(hash string) ([]TreeEntry, error) {
-	rawContent, err := blob.ReadRaw(hash)
+	rawContent, err := object.Read(hash)
 	if err != nil {
 		return nil, err
 	}

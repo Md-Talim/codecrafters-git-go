@@ -1,4 +1,4 @@
-package blob
+package object
 
 import (
 	"bytes"
@@ -12,9 +12,12 @@ import (
 )
 
 // Write writes blob content to git objects directory and returns the hash
-func Write(content []byte) (string, error) {
-	hash := CalculateHash(content)
-	objectFolder, objectPath := getObjectPaths(hash)
+func Write(content []byte, objectType string) (string, error) {
+	hash := CalculateHash(content, objectType)
+	objectFolder, objectPath, err := getObjectPaths(hash)
+	if err != nil {
+		return "", err
+	}
 
 	if err := os.MkdirAll(objectFolder, os.ModePerm); err != nil {
 		return "", fmt.Errorf("failed to create folder %s: %w", objectFolder, err)
@@ -26,29 +29,41 @@ func Write(content []byte) (string, error) {
 	}
 	defer f.Close()
 
-	// Create the git object format: "blob <size>\0<content>"
-	header := fmt.Sprintf("blob %d\x00", len(content))
-	fullContent := append([]byte(header), content...)
+	fullContent := createGitObjectFormat(content, objectType)
 
 	w := zlib.NewWriter(f)
 	if _, err := w.Write(fullContent); err != nil {
 		return "", fmt.Errorf("compression error: %w", err)
 	}
-	w.Close()
+	if err := w.Close(); err != nil {
+		return "", fmt.Errorf("compression close error: %w", err)
+	}
 
 	return hash, nil
 }
 
 // CalculateHash calculates the SHA1 hash of blob content in git format
-func CalculateHash(content []byte) string {
-	fullContent := createGitObjectFormat(content)
+func CalculateHash(content []byte, objectType string) string {
+	fullContent := createGitObjectFormat(content, objectType)
 	hash := sha1.Sum(fullContent)
 	return fmt.Sprintf("%x", hash)
 }
 
-// ReadRaw reads the raw content of a git object file (without extracting blob content)
-func ReadRaw(hash string) ([]byte, error) {
-	_, objectPath := getObjectPaths(hash)
+// ReadContent reads git object and returns just the content (without header)
+func ReadContent(hash string) ([]byte, error) {
+	rawData, err := Read(hash)
+	if err != nil {
+		return nil, err
+	}
+	return ExtractContent(rawData)
+}
+
+// Read reads the content of a git object by its hash
+func Read(hash string) ([]byte, error) {
+	_, objectPath, err := getObjectPaths(hash)
+	if err != nil {
+		return nil, err
+	}
 	if _, err := os.Stat(objectPath); errors.Is(err, os.ErrNotExist) {
 		return nil, fmt.Errorf("not a valid object name %s", hash)
 	}
@@ -72,33 +87,8 @@ func ReadRaw(hash string) ([]byte, error) {
 	return outputBuffer, nil
 }
 
-// Read reads the content of a git object file and returns the content
-func Read(hash string) ([]byte, error) {
-	_, objectPath := getObjectPaths(hash)
-	if _, err := os.Stat(objectPath); errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("not a valid object name %s", hash)
-	}
-
-	fileContents, err := os.ReadFile(objectPath)
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := zlib.NewReader(bytes.NewReader(fileContents))
-	if err != nil {
-		return nil, err
-	}
-	defer r.Close()
-
-	outputBuffer, err := io.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return extractContentFromGitObject(outputBuffer)
-}
-
-func extractContentFromGitObject(data []byte) ([]byte, error) {
+// ExtractContent extracts content from git object format (removes header)
+func ExtractContent(data []byte) ([]byte, error) {
 	parts := bytes.SplitN(data, []byte{0}, 2)
 	if len(parts) < 2 {
 		return nil, fmt.Errorf("malformed git object")
@@ -106,19 +96,19 @@ func extractContentFromGitObject(data []byte) ([]byte, error) {
 	return parts[1], nil
 }
 
-func getObjectPaths(hash string) (string, string) {
+func getObjectPaths(hash string) (string, string, error) {
 	if len(hash) < 3 {
-		return "", ""
+		return "", "", fmt.Errorf("invalid hash length: %d", len(hash))
 	}
 
 	objectDir := hash[:2]
 	objectFile := hash[2:]
 	objectDirPath := filepath.Join(".git", "objects", objectDir)
 	objectFilePath := filepath.Join(objectDirPath, objectFile)
-	return objectDirPath, objectFilePath
+	return objectDirPath, objectFilePath, nil
 }
 
-func createGitObjectFormat(content []byte) []byte {
-	header := fmt.Sprintf("blob %d\x00", len(content))
+func createGitObjectFormat(content []byte, objectType string) []byte {
+	header := fmt.Sprintf("%s %d\x00", objectType, len(content))
 	return append([]byte(header), content...)
 }
