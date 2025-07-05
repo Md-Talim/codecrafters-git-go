@@ -165,16 +165,6 @@ _Note: `clone` command is planned for future implementation._
 - **Compression:** Using zlib for efficient object storage
 - **Hash Functions:** Implementing SHA-1 hashing for content addressing
 
-### Test-Driven Development (TDD) with Go
-
-- **Test Structure:** Organizing tests with Go's testing package
-- **Table-Driven Tests:** Using Go's idiomatic approach to test multiple scenarios
-- **File System Testing:** Testing operations that create and modify files and directories
-- **Binary Data Testing:** Verifying hash calculations and object storage formats
-- **Error Case Testing:** Ensuring robust error handling for edge cases
-
-The TDD approach was particularly valuable when implementing the object storage system, as it helped ensure that hashing, compression, and binary format handling worked correctly across different content types and sizes.
-
 ## 🎯 Challenges & Solutions
 
 - **Binary Format Handling:** Git's tree format uses null-terminated strings and binary hashes requiring careful parsing
@@ -197,4 +187,4 @@ The next major milestone is implementing the `clone` command, which will involve
 
 - This project implements the Git version control system as described in the [Pro Git book](https://git-scm.com/book)
 - The [Codecrafters "Build your own Git" challenge](https://app.codecrafters.io/courses/git/overview) provided the structure and test cases
-- Git's documentation and source code served as invaluable references for understanding the internal formats
+- Git's documentation and source code served as invaluable references for understanding the internal
